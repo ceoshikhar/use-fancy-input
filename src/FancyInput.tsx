@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import styles from "./FancyInput.module.css";
+import React, { useEffect, useRef, useState } from "react";
+import styled from "styled-components";
 
-interface Props {
+export interface FancyInputProps {
     length: number;
 }
 
-export const FancyInput = ({ length }: Props): JSX.Element => {
+export const FancyInput = ({ length }: FancyInputProps): JSX.Element => {
     const [value, setValue] = useState<string[]>([]);
     const [focusOn, setFocusOn] = useState(0);
 
@@ -20,15 +20,12 @@ export const FancyInput = ({ length }: Props): JSX.Element => {
             e.persist();
 
             const value = e.target.value.trim();
-
             if (!value) return;
 
-            console.log("onChange:", { value, idx });
-
             setValue((prev) => {
-                const updated = [...prev];
-                updated[idx] = value;
-                return updated;
+                const copy = [...prev];
+                copy[idx] = value;
+                return copy;
             });
             setFocusOn((prev) => (prev === length - 1 ? prev : prev + 1));
         };
@@ -38,9 +35,9 @@ export const FancyInput = ({ length }: Props): JSX.Element => {
         return () => {
             if (value[idx]) {
                 setValue((prev) => {
-                    const updated = [...prev];
-                    updated[idx] = "";
-                    return updated;
+                    const copy = [...prev];
+                    copy[idx] = "";
+                    return copy;
                 });
             } else {
                 setFocusOn((prev) => (prev === 0 ? 0 : prev - 1));
@@ -54,30 +51,35 @@ export const FancyInput = ({ length }: Props): JSX.Element => {
         };
     };
 
-    console.log({ value, focusOn });
+    console.log("FancyInput: I'm rendering", {
+        value,
+        focusOn,
+    });
 
     return (
-        <>
-            <h3>FancyInput</h3>
-            <div className={styles["__FancyInput-container"]}>
-                {new Array(length).fill(undefined).map((_, idx) => {
-                    const isActive = idx === focusOn;
-                    return (
-                        <Input
-                            key={idx}
-                            idx={idx}
-                            isActive={isActive}
-                            value={value[idx] ?? ""}
-                            onChange={createHandleOnChange(idx)}
-                            onBackspace={createHandleOnBackspace(idx)}
-                            onFocus={createHandleOnFocus(idx)}
-                        />
-                    );
-                })}
-            </div>
-        </>
+        <Container>
+            {new Array(length).fill(undefined).map((_, idx) => {
+                const isActive = idx === focusOn;
+                return (
+                    <Input
+                        key={idx}
+                        idx={idx}
+                        isActive={isActive}
+                        value={value[idx] ?? ""}
+                        onChange={createHandleOnChange(idx)}
+                        onBackspace={createHandleOnBackspace(idx)}
+                        onFocus={createHandleOnFocus(idx)}
+                    />
+                );
+            })}
+        </Container>
     );
 };
+
+const Container = styled.div`
+    display: flex;
+    gap: 1rem;
+`;
 
 interface InputProps
     extends Omit<
@@ -102,20 +104,33 @@ const Input = ({
     }, [isActive]);
 
     const handleOnKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        console.log(event.key);
         if (event.key === "Backspace") {
             onBackspace();
         }
     };
 
     return (
-        <input
+        <StyledInput
             {...rest}
             ref={ref}
-            className={styles["__FancyInput-input"]}
             type="text"
             maxLength={1}
             onKeyDown={handleOnKeyDown}
         />
     );
 };
+
+const StyledInput = styled.input`
+    font-family: inherit;
+    font-size: 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    background: #e5e5e5;
+    padding: 0.5rem 1rem !important;
+    width: 1.5rem;
+    text-align: center !important;
+
+    &:focus {
+        background: inherit;
+    }
+`;
