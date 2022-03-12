@@ -4,8 +4,7 @@ import { FancyInput } from "./FancyInput";
 export const App = () => {
     return (
         <>
-            <h1>Verify phone number</h1>
-            <FancyInput length={0} />
+            <FancyInput length={5} />
         </>
     );
 };
