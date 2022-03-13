@@ -7,7 +7,7 @@ export default {
     component: FancyInput,
 };
 
-const Template = ({ length }: FancyInputProps) => (
+const Template = ({ length, pattern }: FancyInputProps) => (
     <div
         style={{
             maxWidth: 360,
@@ -15,7 +15,7 @@ const Template = ({ length }: FancyInputProps) => (
                 "Inter, Roobert, Helvetica Neue, Helvetica, Arial, sans-serif",
         }}
     >
-        <FancyInput length={length} />
+        <FancyInput length={length} pattern={pattern} />
     </div>
 );
 
