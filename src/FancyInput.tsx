@@ -3,40 +3,46 @@ import styled from "styled-components";
 
 export interface FancyInputProps {
     length: number;
+    pattern?: string;
 }
 
-export const FancyInput = ({ length }: FancyInputProps): JSX.Element => {
+export const FancyInput = ({
+    length,
+    pattern = "",
+}: FancyInputProps): JSX.Element => {
     const [value, setValue] = useState<string[]>([]);
     const [focusOn, setFocusOn] = useState(0);
 
-    if (!length) {
+    if (length < 1) {
         console.error(
             "FancyInput: 'length' prop is required and should be greater than 0"
         );
     }
 
-    const createHandleOnChange = (idx: number) => {
-        return (e: React.ChangeEvent<HTMLInputElement>) => {
-            e.persist();
+    const createHandleOnChange = (index: number) => {
+        return (event: React.ChangeEvent<HTMLInputElement>) => {
+            event.persist();
 
-            const value = e.target.value.trim();
+            const value = event.target.value.trim();
+
             if (!value) return;
+            if (!new RegExp(pattern).test(value)) return;
 
             setValue((prev) => {
                 const copy = [...prev];
-                copy[idx] = value;
+                copy[index] = value;
                 return copy;
             });
             setFocusOn((prev) => (prev === length - 1 ? prev : prev + 1));
         };
     };
 
-    const createHandleOnBackspace = (idx: number) => {
+    const createHandleOnBackspace = (index: number) => {
         return () => {
-            if (value[idx]) {
+            if (value[index]) {
                 setValue((prev) => {
                     const copy = [...prev];
-                    copy[idx] = "";
+                    copy[index] = "";
                     return copy;
                 });
             } else {
@@ -45,9 +51,9 @@ export const FancyInput = ({ length }: FancyInputProps): JSX.Element => {
         };
     };
 
-    const createHandleOnFocus = (idx: number) => {
+    const createHandleOnFocus = (index: number) => {
         return () => {
-            setFocusOn(idx);
+            setFocusOn(index);
         };
     };
 
@@ -58,27 +64,29 @@ export const FancyInput = ({ length }: FancyInputProps): JSX.Element => {
 
     return (
         <Container>
-            {new Array(length).fill(undefined).map((_, idx) => {
-                const isActive = idx === focusOn;
-                return (
-                    <Input
-                        key={idx}
-                        idx={idx}
-                        isActive={isActive}
-                        value={value[idx] ?? ""}
-                        onChange={createHandleOnChange(idx)}
-                        onBackspace={createHandleOnBackspace(idx)}
-                        onFocus={createHandleOnFocus(idx)}
-                    />
-                );
-            })}
+            {length > 0 &&
+                // I don't know if there is a better way to render "length"
+                // number of `Input` elements?
+                new Array(length).fill(undefined).map((_, index) => {
+                    return (
+                        <Input
+                            key={index}
+                            isActive={index === focusOn}
+                            value={value[index] ?? ""}
+                            onChange={createHandleOnChange(index)}
+                            onBackspace={createHandleOnBackspace(index)}
+                            onFocus={createHandleOnFocus(index)}
+                        />
+                    );
+                })}
         </Container>
     );
 };
 
 const Container = styled.div`
+    width: 100%;
     display: flex;
-    gap: 1rem;
+    justify-content: space-between;
 `;
 
 interface InputProps
@@ -87,16 +95,10 @@ interface InputProps
         "type" | "maxLength"
     > {
     isActive: boolean;
-    idx: number;
     onBackspace: () => void;
 }
 
-const Input = ({
-    isActive,
-    idx,
-    onBackspace,
-    ...rest
-}: InputProps): JSX.Element => {
+const Input = ({ isActive, onBackspace, ...rest }: InputProps): JSX.Element => {
     const ref = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -121,16 +123,24 @@ const Input = ({
 };
 
 const StyledInput = styled.input`
-    font-family: inherit;
-    font-size: 1rem;
-    border: none;
-    border-radius: 0.25rem;
     background: #e5e5e5;
+    width: 3.5rem;
     padding: 0.5rem 1rem !important;
-    width: 1.5rem;
+    font-size: 1rem;
     text-align: center !important;
+    border-radius: 0.25rem;
+    border: 2px solid transparent;
+    box-sizing: border-box;
+    outline: none;
+
+    transition: border 175ms ease-out, background-color 175ms ease-out;
+
+    &:hover {
+        border: 2px solid #cccccc;
+    }
 
     &:focus {
         background: inherit;
+        border: 2px solid #3498db;
     }
 `;
