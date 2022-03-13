@@ -7,7 +7,7 @@ export default {
     component: FancyInput,
 };
 
-const Template = (args: FancyInputProps) => (
+const Template = ({ length }: FancyInputProps) => (
     <div
         style={{
             maxWidth: 360,
@@ -15,7 +15,7 @@ const Template = (args: FancyInputProps) => (
                 "Inter, Roobert, Helvetica Neue, Helvetica, Arial, sans-serif",
         }}
     >
-        <FancyInput {...args} />
+        <FancyInput length={length} />
     </div>
 );
 
@@ -27,13 +27,13 @@ AllCharactersAllowed.args = {
 export const AlphaNumeric = Template.bind({});
 AlphaNumeric.args = {
     length: 5,
-    pattern: "^[a-zA-Z0-9_]*$",
+    pattern: "[a-zA-Z0-9_]",
 };
 
 export const OnlyAlphabets = Template.bind({});
 OnlyAlphabets.args = {
     length: 5,
-    pattern: "^[a-zA-Z0-9_]*$",
+    pattern: "[a-zA-Z]",
 };
 
 export const OnlyNumers = Template.bind({});
