@@ -2,7 +2,24 @@ import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 
 export interface FancyInputProps {
+    /**
+     * @description The length of the value that this input expects to receive.
+     *
+     * @example 5 -> If you expect the user to enter a value of 5 characters in
+     * length. Practial use would be a 5 character OTP.
+     */
     length: number;
+
+    /**
+     * @description A regex pattern to test against every character user enters
+     * in the input. If the test fails, the value will be ignored otherwise
+     * accepted.
+     *
+     * @example "[0-9]" -> This pattern allows only numeric (0-9) values to be
+     * accepted.
+     *
+     * @default ""
+     */
     pattern?: string;
 }
 
@@ -56,11 +73,6 @@ export const FancyInput = ({
             setFocusOn(index);
         };
     };
-
-    console.log("FancyInput: I'm rendering", {
-        value,
-        focusOn,
-    });
 
     return (
         <Container>
