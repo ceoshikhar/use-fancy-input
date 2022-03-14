@@ -56,12 +56,15 @@ export const FancyInput = ({
 
     const createHandleOnBackspace = (index: number) => {
         return () => {
-            setValue((prev) => {
-                const copy = [...prev];
-                copy[index] = "";
-                return copy;
-            });
-            setFocusOn((prev) => (prev === 0 ? 0 : prev - 1));
+            if (value[index]) {
+                setValue((prev) => {
+                    const copy = [...prev];
+                    copy[index] = "";
+                    return copy;
+                });
+            } else {
+                setFocusOn((prev) => (prev === 0 ? 0 : prev - 1));
+            }
         };
     };
 
