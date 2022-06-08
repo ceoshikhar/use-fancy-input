@@ -1,6 +1,6 @@
 {
     "name": "react-cool-input",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "A cool React input component for very specific use case like OTP, 2FA code, etc.",
     "main": "dist/index.js",
     "types": "dist/types/index.d.ts",
