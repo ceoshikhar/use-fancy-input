@@ -4,7 +4,7 @@ React hook for building fancy input for things like OTP, 2FA Code, etc.
 
 ## Demo
 
-<img src="https://raw.githubusercontent.com/ceoshikhar/use-fancy-input/main/use-fancy-input-demo.gif?token=GHSAT0AAAAAABQALMD43YOVJHZCUC2SNOQKYVM35XQ"/>
+<img src="./use-fancy-input-demo.gif" height="300"/>
 
 #### Source code behind the GIF above
 
