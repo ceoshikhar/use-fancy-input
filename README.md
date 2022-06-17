@@ -6,7 +6,7 @@ Documentation is 🚧 but the hook is 🚀
 
 ## Demo
 
-<img src="https://raw.githubusercontent.com/ceoshikhar/use-fancy-input/main/use-fancy-input-demo.gif?token=GHSAT0AAAAAABQALMD4HCSXDQOEJDSKC2BYYVM4GPQ" height="300" />
+<img src="./demo.gif" height="300" />
 
 #### Source code behind the GIF above
 
