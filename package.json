@@ -1,7 +1,7 @@
 {
     "name": "use-fancy-input",
-    "version": "0.0.8",
-    "description": "Hook for building fancy input in React for things like OTP, 2FA Code, etc.",
+    "version": "0.0.1",
+    "description": "React hook for building fancy input for things like OTP, 2FA Code, etc.",
     "main": "dist/index.js",
     "types": "dist/types/index.d.ts",
     "sideEffects": false,

@@ -4,8 +4,8 @@ interface UseFancyInputOptions {
     /**
      * @description The length of the value that this input expects to receive.
      *
-     * @example 5 -> If you expect the user to enter a value of 5 characters in
-     * length. Eg: a 5 characters long OTP/2FA.
+     * @example 5 -> If you expect the user to enter a value of 5 characters.
+     * Eg: 5 characters long OTP/2FA like "12345" or "e2T;@".
      */
     length: number;
 
@@ -14,10 +14,7 @@ interface UseFancyInputOptions {
      * in the input. If the test fails, the value will be ignored otherwise
      * accepted.
      *
-     * @example "[0-9]" -> This pattern allows only numeric (0-9) values to be
-     * accepted.
-     *
-     * @default "" -> Allows all characters to be accepted.
+     * @example "[a-zA-Z]" -> This pattern allows only alphabets to be accepted.
      */
     pattern?: string;
 }
