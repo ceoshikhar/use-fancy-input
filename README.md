@@ -9,8 +9,8 @@ React hook for building fancy input for things like OTP, 2FA Code, etc.
 #### Source code behind the GIF above
 
 ```tsx
-const FancyInputComponent = (props: UseFancyInputOptions) => {
-    const { containerRef, inputs } = useFancyInput(props);
+const MyComponent = () => {
+    const { containerRef, inputs } = useFancyInput({ length: 5 });
 
     return (
         <>
