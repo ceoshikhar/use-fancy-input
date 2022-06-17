@@ -1,5 +1,8 @@
-import { FancyInput } from "./FancyInput";
+// Hook
+export { useFancyInput } from "./useFancyInput";
 
-export { FancyInput };
-
-export type { FancyInputProps } from "./FancyInput";
+// Types
+export type {
+    UseFancyInputOptions,
+    UseFancyInputResult,
+} from "./useFancyInput";
