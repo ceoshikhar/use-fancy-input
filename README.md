@@ -31,3 +31,15 @@ const MyComponent = () => {
     );
 };
 ```
+
+# Installation
+
+```bash
+npm install use-fancy-input
+```
+
+**OR**
+
+```bash
+yarn add use-fancy-input
+```
