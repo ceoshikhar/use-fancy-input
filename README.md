@@ -12,7 +12,7 @@ Documentation is 🚧 but the hook is 🚀
 
 ```tsx
 const MyComponent = () => {
-    const { containerRef, inputs } = useFancyInput({ length: 5 });
+    const { containerRef, inputs, value } = useFancyInput({ length: 5 });
 
     return (
         <>
@@ -29,6 +29,10 @@ const MyComponent = () => {
                     return <StyledInput {...input.getInputProps()} />;
                 })}
             </StyledContainer>
+
+            <pre>
+                <code>{JSON.stringify({ value }, null, 2)}</code>
+            </pre>
         </>
     );
 };

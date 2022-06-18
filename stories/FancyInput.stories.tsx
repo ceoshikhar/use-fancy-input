@@ -9,14 +9,12 @@ export default {
 const Template = (props: UseFancyInputOptions) => {
     const { containerRef, inputs, value } = useFancyInput(props);
 
-    console.log({ value });
-
     return (
-        <Container ref={containerRef}>
+        <StyledContainer ref={containerRef}>
             {inputs.map((input) => {
                 return <StyledInput {...input.getInputProps()} />;
             })}
-        </Container>
+        </StyledContainer>
     );
 };
 
@@ -43,7 +41,7 @@ OnlyNumers.args = {
     pattern: "[0-9]",
 };
 
-const Container = styled.div`
+const StyledContainer = styled.div`
     width: 100%;
     display: flex;
     column-gap: 16px;
