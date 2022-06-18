@@ -19,21 +19,28 @@ const MyComponent = () => {
     return (
         <>
             <h3>Unstyled</h3>
-            <div ref={containerRef}>
+            <ul ref={containerRef}>
                 {inputs.map((input) => {
-                    return <input {...input.getInputProps()} />;
+                    const { key, ...props } = input.getInputProps();
+                    return (
+                        <li key={key}>
+                            <input {...props} />
+                        </li>
+                    );
                 })}
-            </div>
+            </ul>
 
             <h3>Styled</h3>
-            <StyledContainer ref={containerRef}>
+            <StyledDiv ref={containerRef}>
                 {inputs.map((input) => {
                     return <StyledInput {...input.getInputProps()} />;
                 })}
-            </StyledContainer>
+            </StyledDiv>
 
             <pre>
-                <code>{JSON.stringify({ value }, null, 2)}</code>
+                <code>
+                    {JSON.stringify({ focusOn, inputValue, value }, null, 2)}
+                </code>
             </pre>
         </>
     );
