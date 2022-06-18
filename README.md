@@ -1,8 +1,10 @@
 # use-fancy-input
 
-React hook for building fancy input for things like OTP, 2FA Code, etc. Documentation is 🚧 but the hook is 🚀
+React hook for building fancy input for things like OTP, 2FA Code, etc.
 
-⚠️ API will be stable after v1.0.0 until then consider it **not** production ready.
+Documentation is 🚧 but the hook is 🚀
+
+### ⚠️ API will be stable after v1.0.0 until then consider it **not** production ready.
 
 ## Demo
 
