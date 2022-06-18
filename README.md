@@ -16,7 +16,8 @@ Documentation is 🚧 but the hook is 🚀
 import { useFancyInput } from "use-fancy-input";
 
 const MyComponent = () => {
-    const { containerRef, inputs, value } = useFancyInput({ length: 5 });
+    const { containerRef, focusOn, inputs, inputValue, value } =
+        useFancyInput(props);
 
     return (
         <>
