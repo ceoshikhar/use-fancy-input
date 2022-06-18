@@ -7,7 +7,7 @@ export default {
 };
 
 const Template = (props: UseFancyInputOptions) => {
-    const { containerRef, inputs, value } = useFancyInput(props);
+    const { containerRef, inputs } = useFancyInput(props);
 
     return (
         <StyledContainer ref={containerRef}>

@@ -1,16 +1,18 @@
 # use-fancy-input
 
-React hook for building fancy input for things like OTP, 2FA Code, etc.
+React hook for building fancy input for things like OTP, 2FA Code, etc. Documentation is 🚧 but the hook is 🚀
 
-Documentation is 🚧 but the hook is 🚀
+⚠️ API will be stable after v1.0.0 until then consider it **not** production ready.
 
 ## Demo
 
-<img src="./demo.gif" height="300" />
+<img src="./demo.gif" />
 
 #### Source code behind the GIF above
 
 ```tsx
+import { useFancyInput } from "use-fancy-input";
+
 const MyComponent = () => {
     const { containerRef, inputs, value } = useFancyInput({ length: 5 });
 
