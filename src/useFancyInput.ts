@@ -23,7 +23,7 @@ type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
 type EventChange = React.ChangeEvent<HTMLInputElement>;
 type EventKeyboard = React.KeyboardEvent<HTMLInputElement>;
 type EventFocus = React.FocusEvent<HTMLInputElement, Element>;
-type CustomInputProps = Pick<
+type GetInputPropsOptions = Pick<
     InputProps,
     "onBlur" | "onChange" | "onKeyDown" | "onFocus"
 >;
@@ -43,7 +43,9 @@ interface UseFancyInputResult {
      * To render the `<input />` elements. It has the `getInputProps` props
      * getter to build the `<input />` elements correctly.
      */
-    inputs: { getInputProps: (props?: CustomInputProps) => GetInputProps }[];
+    inputs: {
+        getInputProps: (options?: GetInputPropsOptions) => GetInputProps;
+    }[];
     /**
      * String value built combining each of the `<input />` element's value.
      */
@@ -147,16 +149,16 @@ const useFancyInput = ({
     }, [focusOn]);
 
     const inputs = useMemo(() => {
-        return value.map((v, index) => {
+        return value.map((item, index) => {
             const getInputProps = (
-                customProps: CustomInputProps = {}
+                options: GetInputPropsOptions = {}
             ): GetInputProps => {
                 const {
                     onBlur: onBlurProp,
                     onChange: onChangeProp,
                     onKeyDown: onKeyDownProp,
                     onFocus: onFocusProp,
-                } = customProps;
+                } = options;
 
                 return {
                     key: `fancy_input_${index}`,
@@ -167,7 +169,7 @@ const useFancyInput = ({
                     onFocus: createHandleOnFocus(index, onFocusProp),
                     pattern,
                     type: "text",
-                    value: v,
+                    value: item,
                 };
             };
 
