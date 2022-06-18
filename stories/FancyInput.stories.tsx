@@ -3,18 +3,27 @@ import styled from "styled-components";
 import { useFancyInput, UseFancyInputOptions } from "../src";
 
 export default {
-    title: "Fancy Input",
+    title: "Examples",
 };
 
 const Template = (props: UseFancyInputOptions) => {
-    const { containerRef, inputs } = useFancyInput(props);
+    const { containerRef, focusOn, inputs, inputValue, value } =
+        useFancyInput(props);
 
     return (
-        <StyledContainer ref={containerRef}>
-            {inputs.map((input) => {
-                return <StyledInput {...input.getInputProps()} />;
-            })}
-        </StyledContainer>
+        <>
+            <StyledDiv ref={containerRef}>
+                {inputs.map((input) => {
+                    return <StyledInput {...input.getInputProps()} />;
+                })}
+            </StyledDiv>
+
+            <pre>
+                <code>
+                    {JSON.stringify({ focusOn, inputValue, value }, null, 2)}
+                </code>
+            </pre>
+        </>
     );
 };
 
@@ -41,7 +50,7 @@ OnlyNumers.args = {
     pattern: "[0-9]",
 };
 
-const StyledContainer = styled.div`
+const StyledDiv = styled.div`
     width: 100%;
     display: flex;
     column-gap: 16px;
