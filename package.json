@@ -1,6 +1,6 @@
 {
     "name": "use-fancy-input",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "description": "React hook for building fancy input for things like OTP, 2FA Code, etc.",
     "repository": "https://github.com/ceoshikhar/use-fancy-input",
     "author": {
