@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 interface UseFancyInputOptions {
     /**
-     * @description The length of the value that this input expects to receive.
+     * The length of the value that this input expects to receive.
      *
      * @example 5 -> If you expect the user to enter a value of 5 characters.
      * Eg: 5 characters long OTP/2FA like "12345" or "e2T;@".
@@ -10,7 +10,7 @@ interface UseFancyInputOptions {
     length: number;
 
     /**
-     * @description A regex pattern to test against every character user enters
+     * A regular expression pattern to test against every character user enters
      * in the input. If the test fails, the value will be ignored otherwise
      * accepted.
      *
@@ -20,16 +20,38 @@ interface UseFancyInputOptions {
 }
 
 type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
-type EventOnChange = React.ChangeEvent<HTMLInputElement>;
-type EventOnKeyDown = React.KeyboardEvent<HTMLInputElement>;
-type EventOnFocus = React.FocusEvent<HTMLInputElement, Element>;
-type CustomInputProps = Omit<InputProps, "type" | "maxLength">;
+type EventChange = React.ChangeEvent<HTMLInputElement>;
+type EventKeyboard = React.KeyboardEvent<HTMLInputElement>;
+type EventFocus = React.FocusEvent<HTMLInputElement, Element>;
+type CustomInputProps = Pick<
+    InputProps,
+    "onBlur" | "onChange" | "onKeyDown" | "onFocus"
+>;
 type GetInputProps = InputProps & { key: string };
 
 interface UseFancyInputResult {
+    /**
+     * Ref for the container element that wraps the `inputs`. This allows us to
+     * access the `<input />` elements to do all the "fancy" things.
+     */
     containerRef: React.MutableRefObject<any>;
+    /**
+     * Index of which `<input />` element is currently focused, `null` if none.
+     */
+    focusOn: null | number;
+    /**
+     * To render the `<input />` elements. It has the `getInputProps` props
+     * getter to build the `<input />` elements correctly.
+     */
     inputs: { getInputProps: (props?: CustomInputProps) => GetInputProps }[];
-    value: string;
+    /**
+     * String value built combining each of the `<input />` element's value.
+     */
+    inputValue: string;
+    /**
+     * Array containing each `<input />` element's value.
+     */
+    value: string[];
 }
 
 const useFancyInput = ({
@@ -45,14 +67,15 @@ const useFancyInput = ({
     }
 
     const [value, setValue] = useState<string[]>(new Array(length).fill(""));
-    const [focusOn, setFocusOn] = useState(0);
+    const inputValue = useMemo(() => value.join(""), [value]);
+    const [focusOn, setFocusOn] = useState<number | null>(null);
     const containerRef = useRef<any | null>(null);
 
     const createHandleOnChange = (
         index: number,
-        handler?: (event: EventOnChange) => any
+        handler?: (event: EventChange) => any
     ) => {
-        return (event: EventOnChange) => {
+        return (event: EventChange) => {
             handler?.(event);
             event.persist();
 
@@ -66,71 +89,85 @@ const useFancyInput = ({
                 return copy;
             });
 
-            setFocusOn((prev) => (prev === length - 1 ? prev : prev + 1));
+            setFocusOn((prev) => {
+                if (prev === null) return null;
+                return prev === length - 1 ? prev : prev + 1;
+            });
         };
     };
 
     const createHandleOnKeyDown = (
         index: number,
-        handler?: (event: EventOnKeyDown) => any
+        handler?: (event: EventKeyboard) => any
     ) => {
-        return (event: EventOnKeyDown) => {
+        return (event: EventKeyboard) => {
             handler?.(event);
 
-            if (event.key !== "Backspace") {
-                return;
-            }
-
-            if (value[index]) {
-                setValue((prev) => {
-                    const copy = [...prev];
-                    copy[index] = "";
-                    return copy;
-                });
-            } else {
-                setFocusOn((prev) => (prev === 0 ? 0 : prev - 1));
+            if (event.key === "Backspace") {
+                if (value[index]) {
+                    setValue((prev) => {
+                        const copy = [...prev];
+                        copy[index] = "";
+                        return copy;
+                    });
+                } else {
+                    setFocusOn((prev) => {
+                        if (prev === null) return prev;
+                        return prev === 0 ? 0 : prev - 1;
+                    });
+                }
             }
         };
     };
 
     const createHandleOnFocus = (
         index: number,
-        handler?: (event: EventOnFocus) => any
+        handler?: (event: EventFocus) => any
     ) => {
-        return (event: EventOnFocus) => {
+        return (event: EventFocus) => {
             handler?.(event);
             setFocusOn(index);
         };
     };
 
+    const createHandleOnBlur = (handler?: (event: EventFocus) => any) => {
+        return (event: EventFocus) => {
+            handler?.(event);
+            setFocusOn(null);
+        };
+    };
+
     useEffect(() => {
-        const inputEl = containerRef.current?.childNodes[
-            focusOn
-        ] as HTMLInputElement;
-        inputEl.focus();
+        if (focusOn !== null) {
+            const inputEl = containerRef.current?.getElementsByTagName("input")[
+                focusOn
+            ] as HTMLInputElement;
+            inputEl.focus();
+        }
     }, [focusOn]);
 
     const inputs = useMemo(() => {
         return value.map((v, index) => {
             const getInputProps = (
-                props: CustomInputProps = {}
+                customProps: CustomInputProps = {}
             ): GetInputProps => {
                 const {
+                    onBlur: onBlurProp,
                     onChange: onChangeProp,
                     onKeyDown: onKeyDownProp,
                     onFocus: onFocusProp,
-                    ...rest
-                } = props;
+                } = customProps;
 
                 return {
-                    key: String(index),
-                    type: "text",
+                    key: `fancy_input_${index}`,
                     maxLength: 1,
-                    value: v,
+                    onBlur: createHandleOnBlur(onBlurProp),
                     onChange: createHandleOnChange(index, onChangeProp),
                     onKeyDown: createHandleOnKeyDown(index, onKeyDownProp),
                     onFocus: createHandleOnFocus(index, onFocusProp),
-                    ...rest,
+                    pattern,
+                    type: "text",
+                    value: v,
                 };
             };
 
@@ -140,7 +177,7 @@ const useFancyInput = ({
         });
     }, [value]);
 
-    return { containerRef, inputs, value: value.join("") };
+    return { containerRef, focusOn, inputs, inputValue, value };
 };
 
 export type { UseFancyInputOptions, UseFancyInputResult };
