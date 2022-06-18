@@ -16,7 +16,7 @@
     "license": "MIT",
     "scripts": {
         "build": "tsc",
-        "build-storybook": "build-storybook",
+        "build-storybook": "build-storybook --docs -o ./docs",
         "format": "prettier --config .prettierrc.json './src/**/*.ts' --write",
         "lint": "eslint --config .eslintrc.json --ext .ts ./src",
         "prebuild": "rm -rf dist",
