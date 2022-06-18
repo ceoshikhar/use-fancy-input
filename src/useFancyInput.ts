@@ -36,15 +36,17 @@ const useFancyInput = ({
     length,
     pattern,
 }: UseFancyInputOptions): UseFancyInputResult => {
+    if (!length || length <= 0) {
+        throw new Error(
+            "useFancyInput: 'length' is required and should be greater than 0" +
+                " but received " +
+                length
+        );
+    }
+
     const [value, setValue] = useState<string[]>(new Array(length).fill(""));
     const [focusOn, setFocusOn] = useState(0);
     const containerRef = useRef<any | null>(null);
-
-    if (length < 1) {
-        console.error(
-            "useFancyInput: 'length' prop is required and should be greater than 0"
-        );
-    }
 
     const createHandleOnChange = (
         index: number,
