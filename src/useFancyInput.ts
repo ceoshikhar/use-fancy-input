@@ -35,11 +35,7 @@ interface UseFancyInputResult {
     /**
      * String value built combining each of the `<input />` element's value.
      */
-    inputValue: string;
-    /**
-     * Array containing each `<input />` element's value.
-     */
-    value: string[];
+    value: string;
 }
 
 type EventChange = React.ChangeEvent<HTMLInputElement>;
@@ -66,8 +62,10 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
         );
     }
 
-    const [value, setValue] = useState<string[]>(new Array(length).fill(""));
-    const inputValue = useMemo(() => value.join(""), [value]);
+    const [valueArray, setValueArray] = useState<string[]>(
+        new Array(length).fill("")
+    );
+    const value = useMemo(() => valueArray.join(""), [valueArray]);
 
     /**
      * Index of which `<input />` element is currently focused, `null` if none.
@@ -79,8 +77,8 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
     const rerender = useReducer((x) => x + 1, 0)[1];
 
     useEffect(() => {
-        console.log("focusRef.current", focusRef.current);
         if (focusRef.current === null) return;
+
         const elements = containerRef.current?.getElementsByTagName("input");
         const inputEl = elements?.[focusRef.current];
         inputEl?.focus();
@@ -98,7 +96,7 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
 
             if (pattern && !new RegExp(pattern).test(value)) return;
 
-            setValue((prev) => {
+            setValueArray((prev) => {
                 const copy = [...prev];
                 copy[index] = value;
                 return copy;
@@ -119,8 +117,8 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
             handler?.(event);
 
             if (event.key === "Backspace") {
-                if (value[index]) {
-                    setValue((prev) => {
+                if (valueArray[index]) {
+                    setValueArray((prev) => {
                         const copy = [...prev];
                         copy[index] = "";
                         return copy;
@@ -167,7 +165,7 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
 
             const text = event.clipboardData.getData("text");
 
-            setValue((prev) => {
+            setValueArray((prev) => {
                 const newValue = Array.from(prev);
 
                 for (
@@ -190,7 +188,7 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
     };
 
     const inputs = useMemo(() => {
-        return value.map((item, index) => {
+        return valueArray.map((item, index) => {
             const getInputProps = (
                 options: GetInputPropsOptions = {}
             ): GetInputPropsResult => {
@@ -220,12 +218,11 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
                 getInputProps,
             };
         });
-    }, [value]);
+    }, [valueArray]);
 
     return {
         containerRef,
         inputs,
-        inputValue,
         value,
     };
 };

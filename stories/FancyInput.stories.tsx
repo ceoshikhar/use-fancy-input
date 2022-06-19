@@ -9,9 +9,7 @@ export default {
 const Template = (props: UseFancyInputOptions) => {
     const count = React.useRef(0);
     count.current++;
-    const { containerRef, inputs, inputValue, value } = useFancyInput(props);
-
-    console.log("render count:", count.current);
+    const { containerRef, inputs, value } = useFancyInput(props);
 
     return (
         <>
@@ -22,7 +20,7 @@ const Template = (props: UseFancyInputOptions) => {
             </StyledDiv>
 
             <pre>
-                <code>{JSON.stringify({ inputValue, value }, null, 2)}</code>
+                <code>{JSON.stringify({ value }, null, 2)}</code>
             </pre>
         </>
     );
