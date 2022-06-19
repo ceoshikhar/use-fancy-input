@@ -18,10 +18,6 @@ const Template = (props: UseFancyInputOptions) => {
                     return <StyledInput {...input.getInputProps()} />;
                 })}
             </StyledDiv>
-
-            <pre>
-                <code>{JSON.stringify({ value }, null, 2)}</code>
-            </pre>
         </>
     );
 };

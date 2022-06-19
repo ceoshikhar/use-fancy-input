@@ -16,20 +16,14 @@ Documentation is 🚧 but the hook is 🚀
 import { useFancyInput } from "use-fancy-input";
 
 const MyComponent = () => {
-    const { containerRef, inputs, value } = useFancyInput({ length: 5 });
+    const { containerRef, inputs } = useFancyInput({ length: 5 });
 
     return (
-        <>
-            <StyledDiv ref={containerRef}>
-                {inputs.map((input) => {
-                    return <StyledInput {...input.getInputProps()} />;
-                })}
-            </StyledDiv>
-
-            <pre>
-                <code>{JSON.stringify({ value }, null, 2)}</code>
-            </pre>
-        </>
+        <StyledDiv ref={containerRef}>
+            {inputs.map((input) => {
+                return <StyledInput {...input.getInputProps()} />;
+            })}
+        </StyledDiv>
     );
 };
 ```
