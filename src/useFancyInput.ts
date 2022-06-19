@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 
 interface UseFancyInputOptions {
     /**
@@ -25,10 +25,6 @@ interface UseFancyInputResult {
      * access the `<input />` elements to do all the "fancy" things.
      */
     containerRef: React.MutableRefObject<any>;
-    /**
-     * Index of which `<input />` element is currently focused, `null` if none.
-     */
-    focusOn: null | number;
     /**
      * To render the `<input />` elements. It has the `getInputProps` props
      * getter to build the `<input />` elements correctly.
@@ -58,7 +54,7 @@ type GetInputPropsOptions = Pick<
 >;
 type GetInputPropsResult = InputProps & { key: string };
 
-const useFancyInput = ({
+const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
     length,
     pattern,
 }: UseFancyInputOptions): UseFancyInputResult => {
@@ -72,16 +68,23 @@ const useFancyInput = ({
 
     const [value, setValue] = useState<string[]>(new Array(length).fill(""));
     const inputValue = useMemo(() => value.join(""), [value]);
-    const [focusOn, setFocusOn] = useState<number | null>(0);
-    const containerRef = useRef<any | null>(null);
+
+    /**
+     * Index of which `<input />` element is currently focused, `null` if none.
+     */
+    const focusRef = useRef<number | null>(0);
+
+    const containerRef = useRef<TContainerRef | null>(null);
+
+    const rerender = useReducer((x) => x + 1, 0)[1];
 
     useEffect(() => {
-        if (focusOn === null) return;
-
+        console.log("focusRef.current", focusRef.current);
+        if (focusRef.current === null) return;
         const elements = containerRef.current?.getElementsByTagName("input");
-        const inputEl = elements[focusOn];
-        inputEl.focus();
-    }, [focusOn]);
+        const inputEl = elements?.[focusRef.current];
+        inputEl?.focus();
+    }, [focusRef.current]);
 
     const createHandleOnChange = (
         index: number,
@@ -101,10 +104,10 @@ const useFancyInput = ({
                 return copy;
             });
 
-            setFocusOn((prev) => {
-                if (prev === null) return null;
-                return prev === length - 1 ? prev : prev + 1;
-            });
+            const prev = focusRef.current;
+            if (prev !== null) {
+                focusRef.current = prev === length - 1 ? prev : prev + 1;
+            }
         };
     };
 
@@ -123,10 +126,13 @@ const useFancyInput = ({
                         return copy;
                     });
                 } else {
-                    setFocusOn((prev) => {
-                        if (prev === null) return prev;
-                        return prev === 0 ? 0 : prev - 1;
-                    });
+                    const prev = focusRef.current;
+                    if (prev !== null) {
+                        if (prev !== 0) {
+                            focusRef.current = prev - 1;
+                            rerender();
+                        }
+                    }
                 }
             }
         };
@@ -138,20 +144,23 @@ const useFancyInput = ({
     ) => {
         return (event: EventFocus) => {
             handler?.(event);
-            setFocusOn(index);
+            focusRef.current = index;
         };
     };
 
     const createHandleOnBlur = (handler?: (event: EventFocus) => any) => {
         return (event: EventFocus) => {
             handler?.(event);
-            setFocusOn(null);
+            focusRef.current = null;
         };
     };
 
     const createHandleOnPaste = (handler?: (event: EventPaste) => any) => {
         return (event: EventPaste) => {
             handler?.(event);
+
+            // const focusOn = focusOnRef.current;
+            const focusOn = focusRef.current;
 
             // Can't paste if no `<input />` is focused.
             if (focusOn === null) return;
@@ -164,18 +173,19 @@ const useFancyInput = ({
                 for (
                     let i = 0, f = focusOn;
                     i < text.length, f < length;
-                    i++, f++
+                    i += 1, f += 1
                 ) {
+                    if (text[i] === undefined) break;
                     newValue[f] = text[i];
                 }
 
                 return newValue;
             });
 
-            setFocusOn((prev) => {
-                if (prev === null) return null;
-                return Math.min(prev + text.length, length - 1);
-            });
+            const prev = focusRef.current;
+            if (prev !== null) {
+                focusRef.current = Math.min(prev + text.length, length - 1);
+            }
         };
     };
 
@@ -212,7 +222,12 @@ const useFancyInput = ({
         });
     }, [value]);
 
-    return { containerRef, focusOn, inputs, inputValue, value };
+    return {
+        containerRef,
+        inputs,
+        inputValue,
+        value,
+    };
 };
 
 export type { UseFancyInputOptions, UseFancyInputResult };
