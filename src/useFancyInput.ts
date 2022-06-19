@@ -19,16 +19,6 @@ interface UseFancyInputOptions {
     pattern?: string;
 }
 
-type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
-type EventChange = React.ChangeEvent<HTMLInputElement>;
-type EventKeyboard = React.KeyboardEvent<HTMLInputElement>;
-type EventFocus = React.FocusEvent<HTMLInputElement, Element>;
-type GetInputPropsOptions = Pick<
-    InputProps,
-    "onBlur" | "onChange" | "onKeyDown" | "onFocus"
->;
-type GetInputProps = InputProps & { key: string };
-
 interface UseFancyInputResult {
     /**
      * Ref for the container element that wraps the `inputs`. This allows us to
@@ -44,7 +34,7 @@ interface UseFancyInputResult {
      * getter to build the `<input />` elements correctly.
      */
     inputs: {
-        getInputProps: (options?: GetInputPropsOptions) => GetInputProps;
+        getInputProps: (options?: GetInputPropsOptions) => GetInputPropsResult;
     }[];
     /**
      * String value built combining each of the `<input />` element's value.
@@ -55,6 +45,18 @@ interface UseFancyInputResult {
      */
     value: string[];
 }
+
+type EventChange = React.ChangeEvent<HTMLInputElement>;
+type EventFocus = React.FocusEvent<HTMLInputElement, Element>;
+type EventKeyboard = React.KeyboardEvent<HTMLInputElement>;
+type EventPaste = React.ClipboardEvent<HTMLInputElement>;
+
+type InputProps = React.InputHTMLAttributes<HTMLInputElement>;
+type GetInputPropsOptions = Pick<
+    InputProps,
+    "onBlur" | "onChange" | "onFocus" | "onKeyDown" | "onPaste"
+>;
+type GetInputPropsResult = InputProps & { key: string };
 
 const useFancyInput = ({
     length,
@@ -70,8 +72,16 @@ const useFancyInput = ({
 
     const [value, setValue] = useState<string[]>(new Array(length).fill(""));
     const inputValue = useMemo(() => value.join(""), [value]);
-    const [focusOn, setFocusOn] = useState<number | null>(null);
+    const [focusOn, setFocusOn] = useState<number | null>(0);
     const containerRef = useRef<any | null>(null);
+
+    useEffect(() => {
+        if (focusOn === null) return;
+
+        const elements = containerRef.current?.getElementsByTagName("input");
+        const inputEl = elements[focusOn];
+        inputEl.focus();
+    }, [focusOn]);
 
     const createHandleOnChange = (
         index: number,
@@ -139,25 +149,47 @@ const useFancyInput = ({
         };
     };
 
-    useEffect(() => {
-        if (focusOn !== null) {
-            const inputEl = containerRef.current?.getElementsByTagName("input")[
-                focusOn
-            ] as HTMLInputElement;
-            inputEl.focus();
-        }
-    }, [focusOn]);
+    const createHandleOnPaste = (handler?: (event: EventPaste) => any) => {
+        return (event: EventPaste) => {
+            handler?.(event);
+
+            // Can't paste if no `<input />` is focused.
+            if (focusOn === null) return;
+
+            const text = event.clipboardData.getData("text");
+
+            setValue((prev) => {
+                const newValue = Array.from(prev);
+
+                for (
+                    let i = 0, f = focusOn;
+                    i < text.length, f < length;
+                    i++, f++
+                ) {
+                    newValue[f] = text[i];
+                }
+
+                return newValue;
+            });
+
+            setFocusOn((prev) => {
+                if (prev === null) return null;
+                return Math.min(prev + text.length, length - 1);
+            });
+        };
+    };
 
     const inputs = useMemo(() => {
         return value.map((item, index) => {
             const getInputProps = (
                 options: GetInputPropsOptions = {}
-            ): GetInputProps => {
+            ): GetInputPropsResult => {
                 const {
                     onBlur: onBlurProp,
                     onChange: onChangeProp,
-                    onKeyDown: onKeyDownProp,
                     onFocus: onFocusProp,
+                    onKeyDown: onKeyDownProp,
+                    onPaste: onPasteProp,
                 } = options;
 
                 return {
@@ -165,8 +197,9 @@ const useFancyInput = ({
                     maxLength: 1,
                     onBlur: createHandleOnBlur(onBlurProp),
                     onChange: createHandleOnChange(index, onChangeProp),
-                    onKeyDown: createHandleOnKeyDown(index, onKeyDownProp),
                     onFocus: createHandleOnFocus(index, onFocusProp),
+                    onKeyDown: createHandleOnKeyDown(index, onKeyDownProp),
+                    onPaste: createHandleOnPaste(onPasteProp),
                     pattern,
                     type: "text",
                     value: item,
