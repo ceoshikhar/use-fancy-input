@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useReducer, useRef, useState } from "react";
 
+import { isMacOS } from "./utils";
+
 interface UseFancyInputOptions {
     /**
      * The length of the value that this input expects to receive.
@@ -70,67 +72,71 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
     /**
      * Index of which `<input />` element is currently focused, `null` if none.
      */
-    const focusRef = useRef<number | null>(0);
+    const focusOnRef = useRef<number | null>(0);
 
     const containerRef = useRef<TContainerRef | null>(null);
 
     const rerender = useReducer((x) => x + 1, 0)[1];
 
     useEffect(() => {
-        if (focusRef.current === null) return;
+        if (focusOnRef.current === null) return;
 
         const elements = containerRef.current?.getElementsByTagName("input");
-        const inputEl = elements?.[focusRef.current];
+        const inputEl = elements?.[focusOnRef.current];
         inputEl?.focus();
-    }, [focusRef.current]);
+    }, [focusOnRef.current]);
 
-    const createHandleOnChange = (
-        index: number,
-        handler?: (event: EventChange) => any
-    ) => {
+    const createHandleOnChange = (handler?: (event: EventChange) => any) => {
         return (event: EventChange) => {
             handler?.(event);
             event.persist();
 
             const value = event.target.value;
 
+            // Discard the value if the RegExp test fails for the `pattern`.
             if (pattern && !new RegExp(pattern).test(value)) return;
+
+            const focusOn = focusOnRef.current;
+            if (focusOn === null) return;
 
             setValueArray((prev) => {
                 const copy = [...prev];
-                copy[index] = value;
+                copy[focusOn] = value;
                 return copy;
             });
 
-            const prev = focusRef.current;
-            if (prev !== null) {
-                focusRef.current = prev === length - 1 ? prev : prev + 1;
-            }
+            focusOnRef.current = Math.min(length - 1, focusOn + 1);
         };
     };
 
-    const createHandleOnKeyDown = (
-        index: number,
-        handler?: (event: EventKeyboard) => any
-    ) => {
+    const createHandleOnKeyDown = (handler?: (event: EventKeyboard) => any) => {
         return (event: EventKeyboard) => {
             handler?.(event);
 
-            if (event.key === "Backspace") {
-                if (valueArray[index]) {
+            const key = event.key;
+            const meta = event.metaKey;
+            const ctrl = event.ctrlKey;
+            const focusOn = focusOnRef.current;
+
+            if (focusOn === null) return;
+
+            if (key === "Backspace") {
+                console.log("focusOn", focusOn);
+                if (valueArray[focusOn]) {
+                    // Delete the value of the currently focused input.
                     setValueArray((prev) => {
                         const copy = [...prev];
-                        copy[index] = "";
+                        copy[focusOn] = "";
                         return copy;
                     });
                 } else {
-                    const prev = focusRef.current;
-                    if (prev !== null) {
-                        if (prev !== 0) {
-                            focusRef.current = prev - 1;
-                            rerender();
-                        }
-                    }
+                    focusOnRef.current = Math.max(0, focusOn - 1);
+                    rerender();
+                }
+            } else if (key === "a") {
+                // If it's macOS we need `Meta(cmd) + a` otherwise `Ctrl + a`.
+                if ((isMacOS() && meta) || (!isMacOS() && ctrl)) {
+                    console.log("TODO: implement 'Select All'");
                 }
             }
         };
@@ -142,14 +148,14 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
     ) => {
         return (event: EventFocus) => {
             handler?.(event);
-            focusRef.current = index;
+            focusOnRef.current = index;
         };
     };
 
     const createHandleOnBlur = (handler?: (event: EventFocus) => any) => {
         return (event: EventFocus) => {
             handler?.(event);
-            focusRef.current = null;
+            focusOnRef.current = null;
         };
     };
 
@@ -157,8 +163,7 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
         return (event: EventPaste) => {
             handler?.(event);
 
-            // const focusOn = focusOnRef.current;
-            const focusOn = focusRef.current;
+            const focusOn = focusOnRef.current;
 
             // Can't paste if no `<input />` is focused.
             if (focusOn === null) return;
@@ -180,10 +185,7 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
                 return newValue;
             });
 
-            const prev = focusRef.current;
-            if (prev !== null) {
-                focusRef.current = Math.min(prev + text.length, length - 1);
-            }
+            focusOnRef.current = Math.min(focusOn + text.length, length - 1);
         };
     };
 
@@ -204,9 +206,9 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
                     key: `fancy_input_${index}`,
                     maxLength: 1,
                     onBlur: createHandleOnBlur(onBlurProp),
-                    onChange: createHandleOnChange(index, onChangeProp),
+                    onChange: createHandleOnChange(onChangeProp),
                     onFocus: createHandleOnFocus(index, onFocusProp),
-                    onKeyDown: createHandleOnKeyDown(index, onKeyDownProp),
+                    onKeyDown: createHandleOnKeyDown(onKeyDownProp),
                     onPaste: createHandleOnPaste(onPasteProp),
                     pattern,
                     type: "text",
@@ -219,6 +221,11 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
             };
         });
     }, [valueArray]);
+
+    console.log({
+        value,
+        focusOn: focusOnRef.current,
+    });
 
     return {
         containerRef,
