@@ -78,13 +78,16 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
 
     const rerender = useReducer((x) => x + 1, 0)[1];
 
+    // We want this effect to run on every render.
     useEffect(() => {
-        if (focusOnRef.current === null) return;
+        const focusOn = focusOnRef.current;
+
+        if (focusOn === null) return;
 
         const elements = containerRef.current?.getElementsByTagName("input");
-        const inputEl = elements?.[focusOnRef.current];
+        const inputEl = elements?.[focusOn];
         inputEl?.focus();
-    }, [focusOnRef.current]);
+    });
 
     const createHandleOnChange = (handler?: (event: EventChange) => any) => {
         return (event: EventChange) => {
@@ -118,20 +121,25 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
             const ctrl = event.ctrlKey;
             const focusOn = focusOnRef.current;
 
+            // Don't have to do anything if no `<input />` is focused.
             if (focusOn === null) return;
 
             if (key === "Backspace") {
-                console.log("focusOn", focusOn);
+                // Does the focused input have a value.
                 if (valueArray[focusOn]) {
-                    // Delete the value of the currently focused input.
+                    // Delete the value.
                     setValueArray((prev) => {
                         const copy = [...prev];
                         copy[focusOn] = "";
                         return copy;
                     });
                 } else {
-                    focusOnRef.current = Math.max(0, focusOn - 1);
-                    rerender();
+                    const nextFocusOn = Math.max(0, focusOn - 1);
+                    // Saving extra unnecessary re-render.
+                    if (nextFocusOn !== focusOn) {
+                        focusOnRef.current = Math.max(0, focusOn - 1);
+                        rerender();
+                    }
                 }
             } else if (key === "a") {
                 // If it's macOS we need `Meta(cmd) + a` otherwise `Ctrl + a`.
