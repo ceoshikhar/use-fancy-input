@@ -117,8 +117,6 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
             handler?.(event);
 
             const key = event.key;
-            const meta = event.metaKey;
-            const ctrl = event.ctrlKey;
             const focusOn = focusOnRef.current;
 
             // Don't have to do anything if no `<input />` is focused.
@@ -137,13 +135,16 @@ const useFancyInput = <TContainerRef extends HTMLElement = HTMLElement>({
                     const nextFocusOn = Math.max(0, focusOn - 1);
                     // Saving extra unnecessary re-render.
                     if (nextFocusOn !== focusOn) {
-                        focusOnRef.current = Math.max(0, focusOn - 1);
+                        focusOnRef.current = nextFocusOn;
                         rerender();
                     }
                 }
             } else if (key === "a") {
                 // If it's macOS we need `Meta(cmd) + a` otherwise `Ctrl + a`.
-                if ((isMacOS() && meta) || (!isMacOS() && ctrl)) {
+                if (
+                    (isMacOS() && event.metaKey) ||
+                    (!isMacOS() && event.ctrlKey)
+                ) {
                     console.log("TODO: implement 'Select All'");
                 }
             }
